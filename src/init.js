@@ -5,7 +5,7 @@ import loadProject from "./todos";
 import { Project,Task } from "./todos";
 
 const allProjects = [];
-const allTasks    = [];
+export const allTasks    = [];
 
 const icons = ["fa-cubes-stacked","fa-bars-progress","fa-walkie-talkie","fa-drumstick-bite","fa-thumbtack","fa-plane-departure","fa-face-grin-tongue-squint","fa-boxes-stacked","fa-mask","fa-masks-theater","fa-mask-ventilator","fa-mask-face","fa-basketball","fa-flask"];
 function createHeader(){
@@ -72,14 +72,14 @@ function createSideBar(){
 
     const addProjectBtn = createBtn("Add Project", "add-project-btn");
     addProjectBtn.addEventListener("click",(e) => {
-        showForm();
+        showForm("add-project-form","add-project-btn");
     })
     inboxBtn.appendChild(createIcon("fa-solid","fa-inbox"));
     todayBtn.appendChild(createIcon("fa-solid","fa-calendar-day"));
     weekBtn.appendChild(createIcon("fa-solid","fa-calendar-week"));
     addProjectBtn.appendChild(createIcon("fa-solid","fa-plus"));
     projectList.appendChild(addProjectBtn)
-    projectList.appendChild(createProjectForm());
+    projectList.appendChild(createForm("project"));
     projects.appendChild(projectHeading);
     projects.appendChild(projectList);
 
@@ -136,9 +136,63 @@ function setActiveBtn(btn){
     });
     btn.classList.add("active");
 }
-function showForm(){
-    const form = document.querySelector(`.project-form`);
-    const addBtn = document.querySelector(`.add-project-btn`);
+export function createForm(formName){
+    const form = document.createElement("div");
+    form.classList.add(`add-${formName}-form`);
+    form.classList.add("hidden");
+
+    const input = document.createElement("input");
+    input.classList.add(`add-${formName}-input`);
+    input.setAttribute("type","text");
+    input.placeholder = `${formName} name`;
+
+    const btnContainer = document.createElement("div");
+    btnContainer.classList.add("form-btn-container");
+
+    const addBtn = createBtn("Add",`add-new-${formName}-btn`);
+    addBtn.classList.remove("btn")
+    addBtn.addEventListener("click",(e) => {
+        if (formName === "project"){
+            const newProject = new Project(input.value,getRandom(icons));
+            allProjects.push(newProject);
+            initwebsite();
+        }
+        else if (formName === "task"){
+            const newTask = new Task(getRandom(icons),input.value,NaN,false);
+            allTasks.push(newTask);
+            initwebsite()
+        }
+        else if(formName === "subtask"){
+            const projectName = document.querySelector(".head").textContent;
+            allProjects.forEach(project => {
+                if (project.name === projectName){
+                    const newSubtask = new Task(getRandom(icons),input.value,project,true);
+                    project.subtasks.push(newSubtask);
+                    allTasks.push(newSubtask);
+                    initwebsite();
+                }   
+                    
+            })
+            
+        }
+    });
+
+    const cancelBtn = createBtn("Cancel",`cancel-${formName}-btn`);
+    cancelBtn.classList.remove("btn")
+    cancelBtn.addEventListener("click",(e)=>{
+        showForm(`add-${formName}-form`,`add-${formName}-btn`);
+    });
+
+    btnContainer.appendChild(addBtn);
+    btnContainer.appendChild(cancelBtn);
+    form.appendChild(input);
+    form.appendChild(btnContainer);
+
+    return form;
+}
+export function showForm(formClass,btnClass){
+    const form = document.querySelector(`.${formClass}`);
+    const addBtn = document.querySelector(`.${btnClass}`);
     if(form.classList.contains("hidden")){
         form.classList.remove("hidden");
         addBtn.classList.add("hidden");
@@ -149,51 +203,6 @@ function showForm(){
         addBtn.classList.remove("hidden");
     }
 
-}
-function createProjectForm(){
-    const form = document.createElement("div");
-    form.classList.add("project-form");
-    form.classList.add("hidden");
-
-    const projectName = document.createElement("input");
-    projectName.setAttribute("type","text");
-    projectName.placeholder = "Project Name";
-    projectName.classList.add("project-name");
-
-    const addProjectBtn = createBtn("Add","project-add-btn");
-    addProjectBtn.addEventListener("click",(e)=>{
-        if(projectName.value === "") return;
-        addProject(projectName.value);
-        
-    });
-    
-    const cancelBtn = createBtn("Cancel","cancel");
-    cancelBtn.addEventListener("click",showForm);
-
-    form.appendChild(projectName);
-    form.appendChild(addProjectBtn);
-    form.appendChild(cancelBtn);
-
-    return form;
-
-}
-export function createTaskForm(){
-    const form = document.createElement("div");
-    form.classList.add("task-form");
-    // form.classList.add("hidden");
-    const taskName = document.createElement("input");
-    taskName.setAttribute("type","text");
-    taskName.placeholder = "Task Name";
-    taskName.classList.add("task-name");
-    const addBtn = createBtn("Add","task-add-btn");
-    
-    const cancelBtn = createBtn("Cancel","cancel");
-    cancelBtn.addEventListener("click",showForm);
-    form.appendChild(taskName);
-    form.appendChild(addBtn);
-    form.appendChild(cancelBtn);
-
-    return form;
 }
 function getRandom (list) {
   return list[Math.floor((Math.random()*list.length))];
