@@ -1,4 +1,6 @@
-import initwebsite, { createIcon, showForm , createForm} from "./init";
+import initwebsite, { createIcon, showForm , createForm, displayTaskRow} from "./init";
+import { allTasks } from "./init";
+import { arrayRemove } from "./init";
 export class Project{
     constructor(projectName,icon){
         this.name = projectName;
@@ -7,12 +9,13 @@ export class Project{
     }
 }
 export class Task{
-    constructor(icon,title,project,isSubtask){
+    constructor(icon,title,project,isSubtask,dueDate){
         this.icon    = icon;
         this.title   = title;
         this.state   = false;
         this.project = project;
         this.isSubtask = isSubtask;
+        this.dueDate    = dueDate;
     }
 }
 function createProject(project){
@@ -27,34 +30,50 @@ function createProject(project){
     tasksContainer.classList.add("subtasks-container");
 
     project.subtasks.forEach(subtask => {
-        const taskRow = document.createElement("div");
-        taskRow.classList.add("task-row");
+        tasksContainer.appendChild(displayTaskRow(subtask,false));
 
-        const taskTitle = document.createElement("p");
-        taskTitle.classList.add("task-title");
-        taskTitle.textContent = subtask.title;
-        changeTaskState(taskTitle,subtask);
-        taskTitle.addEventListener("click",()=>{
-            if(subtask.state === true){
-                subtask.state = false;
-                changeTaskState(taskTitle,subtask);
-            }
-            else if(subtask.state === false){
-                subtask.state = true;
-                changeTaskState(taskTitle,subtask);
-            }
+
+        ////////the next lines are done by displayTaskRow function !!!
+
+        // const taskRow = document.createElement("div");
+        // taskRow.classList.add("task-row");
+
+        // const taskTitle = document.createElement("p");
+        // taskTitle.classList.add("task-title");
+        // taskTitle.textContent = subtask.title;
+        // changeTaskState(taskTitle,subtask);
+        // taskTitle.addEventListener("click",()=>{
+        //     if(subtask.state === true){
+        //         subtask.state = false;
+        //         changeTaskState(taskTitle,subtask);
+        //     }
+        //     else if(subtask.state === false){
+        //         subtask.state = true;
+        //         changeTaskState(taskTitle,subtask);
+        //     }
                 
 
-        });
+        // });
+        // const dueDate = document.createElement("input");
+        // dueDate.setAttribute("type","date");
+        // dueDate.classList.add("due-date");
 
-        const taskIcon = document.createElement("i");
-        taskIcon.classList.add("fa-solid");
-        taskIcon.classList.add(`${subtask.icon}`);
+        // if(subtask.dueDate){
+        //     dueDate.value = subtask.dueDate;
+        // }
+        // dueDate.addEventListener("input",(e)=>{
+        //     subtask.dueDate = e.target.value;
+        // })
 
-        taskRow.appendChild(taskIcon);
-        taskRow.appendChild(taskTitle);
+        // const taskIcon = document.createElement("i");
+        // taskIcon.classList.add("fa-solid");
+        // taskIcon.classList.add(`${subtask.icon}`);
 
-        tasksContainer.appendChild(taskRow);        
+        // taskTitle.appendChild(taskIcon);
+        // taskRow.appendChild(taskTitle);
+        // taskRow.appendChild(dueDate);
+
+        // tasksContainer.appendChild(taskRow);        
 
     });
 
@@ -81,12 +100,19 @@ export function changeTaskState(taskTitle,task){
     if(task.state === true){
         //task done
         taskTitle.classList.add("done");
+        
     }
     else if(task.state === false){
         //not done 
         taskTitle.classList.remove("done");
     }
 
+}
+export function deleteTask(task){
+    if(task.isSubtask)
+        arrayRemove(task.project.subtasks,task);
+    arrayRemove(allTasks,task);
+    return initwebsite();
 }
 function loadProject(project){
     const content = document.querySelector(".contents");

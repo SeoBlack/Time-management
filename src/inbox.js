@@ -1,8 +1,9 @@
-import { createIcon } from "./init";
+import initwebsite, { createIcon } from "./init";
 import { createForm } from "./init";
 import { showForm } from "./init";
 import { allTasks } from "./init";
-import { changeTaskState } from "./todos";
+import { changeTaskState, deleteTask } from "./todos";
+import { displayTaskRow } from "./init";
 
 function createInbox(){
     const inbox = document.createElement("div");
@@ -23,40 +24,66 @@ function createInbox(){
         showForm("add-task-form","add-task-btn");
     })
     allTasks.forEach(task =>{
-        const taskRow = document.createElement("div");
-        taskRow.classList.add("task-row");
+        tasksContainer.appendChild(displayTaskRow(task,true));
 
-        const taskTitle = document.createElement("p");
-        taskTitle.classList.add("task-title");
-        if(task.isSubtask){
-            taskTitle.textContent = `${task.title}(${task.project.name})`;
-        }
-        else{
-            taskTitle.textContent = task.title;
-        }
+        ////////the next lines are done by displayTaskRow function !!!
         
-        changeTaskState(taskTitle,task);
-        taskTitle.addEventListener("click",()=>{
-            if(task.state === true){
-                task.state = false;
-                changeTaskState(taskTitle,task);
+        // const taskRow = document.createElement("div");
+        // taskRow.classList.add("task-row");
+
+        // const taskTitle = document.createElement("p");
+        // taskTitle.classList.add("task-title");
+        // if(task.isSubtask){
+        //     taskTitle.textContent = `${task.title}(${task.project.name})`;
+        // }
+        // else{
+        //     taskTitle.textContent = task.title;
+        // }
+        // changeTaskState(taskTitle,task);
+        // taskTitle.addEventListener("click",()=>{
+        //     if(task.state === true){
+        //         task.state = false;
+        //         changeTaskState(taskTitle,task);
                 
-            }
-            else if(task.state === false){
-                task.state = true;
-                changeTaskState(taskTitle,task);
-            }
+        //     }
+        //     else if(task.state === false){
+        //         task.state = true;
+        //         changeTaskState(taskTitle,task);
+        //     }
 
-        })
+        // })
 
-        const taskIcon = document.createElement("i");
-        taskIcon.classList.add("fa-solid");
-        taskIcon.classList.add(`${task.icon}`);
+        // const deleteTaskBtn = createIcon("fa-solid","fa-trash");
+        // deleteTaskBtn.addEventListener("click",(e) => {
+        //     deleteTask(task);
+        // })
+        // const dueDate = document.createElement("input");
+        // dueDate.setAttribute("type","date");
+        // dueDate.classList.add("due-date");
+        // if(task.dueDate){
+        //     dueDate.value = task.dueDate;
+        // }
+        // dueDate.addEventListener("input",(e)=>{
+        //     task.dueDate = e.target.value;
+        //     console.log(task.dueDate);
+        // })
+        
+        // const dueDateContainer = document.createElement("div");
+        // dueDateContainer.classList.add("duedate-container");
 
-        taskRow.appendChild(taskIcon);
-        taskRow.appendChild(taskTitle);
+        // const taskIcon = document.createElement("i");
+        // taskIcon.classList.add("fa-solid");
+        // taskIcon.classList.add(`${task.icon}`);
+        
+        // dueDateContainer.appendChild(dueDate);
+        // dueDateContainer.appendChild(deleteTaskBtn);
+        // taskTitle.appendChild(taskIcon);
+        // taskRow.appendChild(taskTitle);
+        // taskRow.appendChild(dueDateContainer);
+        
+        
 
-        tasksContainer.appendChild(taskRow);
+        // tasksContainer.appendChild(taskRow);
     })
     addTaskBtn.appendChild(createIcon("fa-solid","fa-plus"));
     tasksContainer.appendChild(addTaskBtn);

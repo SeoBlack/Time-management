@@ -3,11 +3,29 @@ import loadToday from "./today";
 import loadWeek from "./week";
 import loadProject from "./todos";
 import { Project,Task } from "./todos";
-
+import { deleteTask } from "./todos";
+import { changeTaskState } from "./todos";
 const allProjects = [];
 export const allTasks    = [];
+/////////////////////////////////////////////////////////
+/////default values
+const today = new Date();
+
+const currentDate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 
 const icons = ["fa-cubes-stacked","fa-bars-progress","fa-walkie-talkie","fa-drumstick-bite","fa-thumbtack","fa-plane-departure","fa-face-grin-tongue-squint","fa-boxes-stacked","fa-mask","fa-masks-theater","fa-mask-ventilator","fa-mask-face","fa-basketball","fa-flask"];
+const project1 = new Project("Step 1 ",getRandom(icons));
+const project2 = new Project("Step 2",getRandom(icons));
+const task1    = new Task(project1.icon,"Click Me, then go to step 2",project1,true);
+const task2    = new Task(project2.icon,"Change My date , click me, then go to inbox",project2,true);
+const task3    = new Task("fa-bars-progress","change my date to current day, click me,then go to today",NaN,false);
+const task4    = new Task("fa-bars-progress","congrats, now you know how to use me!, you can delete me now :)", NaN,false,currentDate);
+project1.subtasks.push(task1);
+project2.subtasks.push(task2);
+allTasks.push(task1,task2,task3);
+allProjects.push(project1,project2);
+////////////////////////////////////////////////////////
+
 function createHeader(){
     const header  = document.createElement("header");
     header.classList.add("header");
@@ -39,7 +57,13 @@ function createSideBar(){
     todayBtn.addEventListener('click',(e) =>{
         if(e.target.classList.contains("active")) return;
         setActiveBtn(todayBtn);
+                //////tutorial only 
+        if(task3.state === true && task3.dueDate === currentDate){
+            allTasks.push(task4);
+            
+        }
         loadToday();
+        task3.state = false;
     });
 
     const weekBtn = createBtn("This Week","week-btn");
@@ -60,14 +84,28 @@ function createSideBar(){
     projectList.classList.add("projects-list");
 /////////projects loader
     allProjects.forEach(project =>{
+        const projectRow = document.createElement("div");
+        projectRow.classList.add("project-row");
         const newProjectBtn = createBtn(project.name,"btn");
         newProjectBtn.addEventListener('click', (e) =>{
             if (e.target.classList.contains("active")) return;
             setActiveBtn(newProjectBtn);
             loadProject(project);
         });
+        const deleteProject = createIcon("fa-solid","fa-trash");
+        deleteProject.addEventListener("click",(e)=>{
+            
+            project.subtasks.forEach(task => {
+                arrayRemove(allTasks,task);
+            })
+            arrayRemove(allProjects,project);
+            initwebsite();
+        })
+        
         newProjectBtn.appendChild(createIcon("fa-solid",project.icon));
-        projectList.appendChild(newProjectBtn);
+        projectRow.appendChild(newProjectBtn);
+        projectRow.appendChild(deleteProject);
+        projectList.appendChild(projectRow);
     })
 
     const addProjectBtn = createBtn("Add Project", "add-project-btn");
@@ -158,7 +196,7 @@ export function createForm(formName){
             initwebsite();
         }
         else if (formName === "task"){
-            const newTask = new Task(getRandom(icons),input.value,NaN,false);
+            const newTask = new Task("fa-bars-progress",input.value,NaN,false);
             allTasks.push(newTask);
             initwebsite()
         }
@@ -166,7 +204,7 @@ export function createForm(formName){
             const projectName = document.querySelector(".head").textContent;
             allProjects.forEach(project => {
                 if (project.name === projectName){
-                    const newSubtask = new Task(getRandom(icons),input.value,project,true);
+                    const newSubtask = new Task(project.icon,input.value,project,true);
                     project.subtasks.push(newSubtask);
                     allTasks.push(newSubtask);
                     initwebsite();
@@ -190,6 +228,60 @@ export function createForm(formName){
 
     return form;
 }
+export function displayTaskRow(task,withProjectName){
+    const taskRow = document.createElement("div");
+    taskRow.classList.add("task-row");
+
+    const taskIcon = createIcon("fa-solid",task.icon);
+
+    const taskTitle = document.createElement("p");
+    taskTitle.classList.add("task-title");
+    if(withProjectName && task.project){
+        taskTitle.textContent = `${task.title}(${task.project.name})`;
+    }
+    else{
+        taskTitle.textContent = task.title;
+    }
+
+    const dueDateContainer= document.createElement("div");
+    dueDateContainer.classList.add("duedate-container");
+
+    const dueDate  = document.createElement("input");
+    dueDate.setAttribute("type","date");
+    dueDate.classList.add("due-date");
+    if(task.dueDate)
+        dueDate.value = task.dueDate;
+    dueDate.addEventListener("input",(e)=>{
+        task.dueDate = e.target.value;
+    })
+    const deleteTaskBtn = createIcon("fa-solid","fa-trash");
+    deleteTaskBtn.addEventListener("click",(e)=>{
+        deleteTask(task);
+    });
+    changeTaskState(taskTitle,task);
+    taskTitle.addEventListener("click",()=>{
+        if(task.state === true){
+            task.state = false;
+            changeTaskState(taskTitle,task);
+                
+        }
+        else if(task.state === false){
+            task.state = true;
+            changeTaskState(taskTitle,task);
+        }
+
+
+    })
+
+    taskTitle.appendChild(taskIcon);
+    taskRow.appendChild(taskTitle);
+    dueDateContainer.appendChild(dueDate);
+    dueDateContainer.appendChild(deleteTaskBtn);
+    taskRow.appendChild(dueDateContainer);
+    
+    return taskRow;
+
+} 
 export function showForm(formClass,btnClass){
     const form = document.querySelector(`.${formClass}`);
     const addBtn = document.querySelector(`.${btnClass}`);
@@ -206,13 +298,11 @@ export function showForm(formClass,btnClass){
 }
 function getRandom (list) {
   return list[Math.floor((Math.random()*list.length))];
-}
-function addProject(projectName){ 
-
-    const newProject = new Project(projectName,getRandom(icons));
-    allProjects.push(newProject);
-    initwebsite();
-
+};
+export function arrayRemove(arr, value) {  
+    ///getting index
+    const index = arr.indexOf(value);
+    arr.splice(index,1);
 }
 
 function initwebsite(){
@@ -221,6 +311,7 @@ function initwebsite(){
 
     const contents = document.createElement("div");
     contents.classList.add("contents");
+    
 
 
 
