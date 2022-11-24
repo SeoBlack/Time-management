@@ -5,8 +5,8 @@ import loadProject from "./todos";
 import { Project,Task } from "./todos";
 import { deleteTask } from "./todos";
 import { changeTaskState } from "./todos";
-const allProjects = [];
-export const allTasks    = [];
+export let allProjects = [];
+export let allTasks    = [];
 /////////////////////////////////////////////////////////
 /////default values
 const today = new Date();
@@ -20,10 +20,41 @@ const task1    = new Task(project1.icon,"Click Me, then go to step 2",project1,t
 const task2    = new Task(project2.icon,"Change My date , click me, then go to inbox",project2,true);
 const task3    = new Task("fa-bars-progress","change my date to current day, click me,then go to today",NaN,false);
 const task4    = new Task("fa-bars-progress","congrats, now you know how to use me!, you can delete me now :)", NaN,false,currentDate);
-project1.subtasks.push(task1);
-project2.subtasks.push(task2);
+project1.subtasks.push(task1.title);
+project2.subtasks.push(task2.title);
 allTasks.push(task1,task2,task3);
 allProjects.push(project1,project2);
+////////////////////////////////////////////////////////
+
+//storage function
+export function updateStorage(){
+
+    window.localStorage.setItem("projects",JSON.stringify(allProjects));
+    window.localStorage.setItem("tasks",JSON.stringify(allTasks));
+
+}
+///////
+/////
+/////
+////////////
+/// To do ///////////////////
+function getProjects(){
+    const projects = window.localStorage.getItem("projects");
+    if(projects === null){
+        return;
+    }
+    allProjects = JSON.parse(projects);
+}
+function getTasks(){
+    const tasks = window.localStorage.getItem("tasks")
+    if (tasks === null){
+        return;
+    }
+    allTasks=JSON.parse(tasks);
+    console.log(JSON.parse(tasks));
+    console.log(allProjects);
+}
+
 ////////////////////////////////////////////////////////
 
 function createHeader(){
@@ -99,6 +130,7 @@ function createSideBar(){
                 arrayRemove(allTasks,task);
             })
             arrayRemove(allProjects,project);
+            updateStorage();
             initwebsite();
         })
         
@@ -193,20 +225,24 @@ export function createForm(formName){
         if (formName === "project"){
             const newProject = new Project(input.value,getRandom(icons));
             allProjects.push(newProject);
+            updateStorage();
+            console.log(JSON.parse(localStorage.getItem("projects")));
             initwebsite();
         }
         else if (formName === "task"){
             const newTask = new Task("fa-bars-progress",input.value,NaN,false);
             allTasks.push(newTask);
+            updateStorage();
             initwebsite()
         }
         else if(formName === "subtask"){
             const projectName = document.querySelector(".head").textContent;
             allProjects.forEach(project => {
                 if (project.name === projectName){
-                    const newSubtask = new Task(project.icon,input.value,project,true);
-                    project.subtasks.push(newSubtask);
+                    const newSubtask = new Task(project.icon,input.value,project.name,true);
+                    project.subtasks.push(newSubtask.title);
                     allTasks.push(newSubtask);
+                    updateStorage();
                     initwebsite();
                 }   
                     
@@ -237,7 +273,7 @@ export function displayTaskRow(task,withProjectName){
     const taskTitle = document.createElement("p");
     taskTitle.classList.add("task-title");
     if(withProjectName && task.project){
-        taskTitle.textContent = `${task.title}(${task.project.name})`;
+        taskTitle.textContent = `${task.title}(${task.project})`;
     }
     else{
         taskTitle.textContent = task.title;
@@ -253,10 +289,12 @@ export function displayTaskRow(task,withProjectName){
         dueDate.value = task.dueDate;
     dueDate.addEventListener("input",(e)=>{
         task.dueDate = e.target.value;
+        updateStorage();
     })
     const deleteTaskBtn = createIcon("fa-solid","fa-trash");
     deleteTaskBtn.addEventListener("click",(e)=>{
         deleteTask(task);
+        
     });
     changeTaskState(taskTitle,task);
     taskTitle.addEventListener("click",()=>{
@@ -311,6 +349,9 @@ function initwebsite(){
 
     const contents = document.createElement("div");
     contents.classList.add("contents");
+    getProjects();
+    getTasks();
+    
     
 
 
@@ -319,6 +360,7 @@ function initwebsite(){
     main.appendChild(createSideBar());
     main.appendChild(createFooter());
     main.appendChild(contents);
+    loadInbox()
 }
 
 export default initwebsite;

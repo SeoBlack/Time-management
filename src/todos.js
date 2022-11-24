@@ -1,6 +1,8 @@
 import initwebsite, { createIcon, showForm , createForm, displayTaskRow} from "./init";
 import { allTasks } from "./init";
 import { arrayRemove } from "./init";
+import { updateStorage } from "./init";
+import { allProjects } from "./init";
 export class Project{
     constructor(projectName,icon){
         this.name = projectName;
@@ -30,6 +32,11 @@ function createProject(project){
     tasksContainer.classList.add("subtasks-container");
 
     project.subtasks.forEach(subtask => {
+        
+        allTasks.forEach(task =>{
+            if(task.title === subtask)
+                subtask = task;
+        })
         tasksContainer.appendChild(displayTaskRow(subtask,false));
 
 
@@ -109,9 +116,17 @@ export function changeTaskState(taskTitle,task){
 
 }
 export function deleteTask(task){
+
     if(task.isSubtask)
-        arrayRemove(task.project.subtasks,task);
+    {
+        allProjects.forEach(project =>{
+            if(project.title === task.Project){
+                arrayRemove(project.subtasks,task.title);
+            }
+        })
+    }
     arrayRemove(allTasks,task);
+    updateStorage();
     return initwebsite();
 }
 function loadProject(project){
