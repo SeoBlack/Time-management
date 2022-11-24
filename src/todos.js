@@ -113,6 +113,7 @@ export function changeTaskState(taskTitle,task){
         //not done 
         taskTitle.classList.remove("done");
     }
+    updateStorage();
 
 }
 export function deleteTask(task){
